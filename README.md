@@ -9,7 +9,7 @@ lein uberjar
 java -jar target/my-fx.jar
 ```
 
-Then double click on the terminal or open another tab or double click on any other window.
+Then repeatedly double click on the terminal or on any other window.
 
 
 ![Crash Demo](https://github.com/uris77/my-fx/blob/master/fx-crash.gif)
