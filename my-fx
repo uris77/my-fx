@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+java -jar /Users/uris77/Development/clojure/desktop/my-fx/target/my-fx.jar
