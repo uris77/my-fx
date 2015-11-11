@@ -1,11 +1,19 @@
 (ns my-fx.core
   (:gen-class)
-  (:require [fx-clj.core :as fx])
+  (:require [fx-clj.core :as fx]
+            [taoensso.timbre :as log]
+            [taoensso.timbre.appenders.core :as appenders]
+            [my-fx.my-run :as my-run])
   (:import (javafx.stage Modality)
            (java.awt SplashScreen)))
 
-(def app-state (atom {:output-to   nil
+(defonce app-state (atom {:output-to   nil
                       :source-file nil}))
+
+(log/merge-config! {:appenders {:println {:enabled? true}
+                                :spit (appenders/spit-appender {:fname "fx.log"})}})
+
+(log/set-level! :debug)
 
 (defn create-grid []
   (let [grid              (fx/grid-pane {:alignment (javafx.geometry.Pos/CENTER)
@@ -54,22 +62,25 @@
 
 (defn start-app
   [app-fn & {:keys [title maximized]}]
-  (fx/run<!!
-    (let [scene (fx/scene (app-fn))
-          stage (fx/stage)]
-      (.setScene stage scene)
-      (.initModality stage Modality/NONE)
-      (fx/pset! stage {:title title})
-      (when maximized (.setMaximized stage true))
-      (.show stage)
-      (let [splash-screen (SplashScreen/getSplashScreen)]
-        (when splash-screen
-          (try
-            (.close splash-screen)
-            (catch Exception ex))))
-      stage)))
+  (try
+    (my-run/run<!!
+     (let [scene (fx/scene (app-fn))
+           stage (fx/stage)]
+       (.setScene stage scene)
+       (.initModality stage Modality/NONE)
+       (fx/pset! stage {:title title})
+       (when maximized (.setMaximized stage true))
+       (.show stage)
+       (let [splash-screen (SplashScreen/getSplashScreen)]
+         (when splash-screen
+           (try
+             (.close splash-screen)
+             (catch Exception ex))))
+       stage))
+    (catch Exception e (log/info (.getMessage e)))))
 
 
 (defn -main [& args]
-  (start-app #'create-grid :title "My Fx"))
+  (log/info "STARTING....")
+  (start-app create-grid :title "My Fx"))
 
